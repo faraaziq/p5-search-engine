@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+        <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+        <title>ask485</title>
+    </head>
+
+    <body>
+        <div class="search_bar">
+            <form action="/" method="GET">
+                <div><input type="text" name="q"<FIXME add other attributes such as value>/></div>
+                <div><input type="range" name="w" <FIXME add other attributes such as min and max> /></div>
+                <input type="submit" value="Search"/>
+              </form>
+        </div>
+        {% if results is defined and results|length == 0 %}
+            <div class="no_results">No search results found!</div>
+        {% else %}
+            {% for result in results %}
+                <a class="doc_url">{{ url }}</a>
+                <div class="doc_title">{{ doc_title }}</div>
+                <div class="doc_summary">{{ doc_summary }}</div>       
+            {% endfor %}
+        {% endif %}
+    </body>
+
+</html>
