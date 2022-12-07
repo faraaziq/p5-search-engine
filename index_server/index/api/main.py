@@ -13,13 +13,17 @@ INVERTED_INDEX = {}
 DOC_LIST = {}
 
 def load_index():
+    global STOP_WORDS
 
     file_dir = os.path.dirname(os.path.dirname(__file__))
     file_path = os.path.join(file_dir, 'stopwords.txt')
 
     file1 = open(file_path, 'r')
-    for line in file1:
-        STOP_WORDS.append(line)
+    #for line in file1:
+    stopwords = file1.read()
+    STOP_WORDS = stopwords.replace('\n', ' ').split()
+    #print(STOP_WORDS)
+        #STOP_WORDS.append(line)
     file1.close()
 
     file_path = os.path.join(file_dir, 'pagerank.out')
@@ -78,7 +82,7 @@ def get_url():
         "hits": "/api/v1/hits/",
         "url": "/api/v1/"
     }
-
+    
     return flask.jsonify(**context)
 
 @index.app.route("/api/v1/hits/")
@@ -86,44 +90,56 @@ def get_hits():
     #set query variables from arguments
     args = request.args
     weight = args.get('w', default=0.5, type=int)
-    dirty_queries = args.get('q').split('+')
-    queries = clean(dirty_queries)
+    queries = args.get('q').split(' ')
+    #print(dirty_queries)
+    #queries = clean(dirty_queries)
+    #print(queries)
 
     #gets set of docs containing all queries and dict of term frequency
     freq_map = {}
     docs_list = []
     
-    for query in queries:
-        
-        if query in freq_map.keys():
-            freq_map[query] += 1
-        else:
-            freq_map[query] = 1
+    global STOP_WORDS
+   
 
-        if query in DOC_LIST.keys():
-            tmp_set = set(DOC_LIST[query])
-            docs_list.append(tmp_set)
-        
+    for query in queries:
+        if query not in STOP_WORDS:
+           
+            
+            if query in freq_map.keys():
+                freq_map[query] += 1
+            else:
+                freq_map[query] = 1
+
+            if query in DOC_LIST.keys():
+                tmp_set = set(DOC_LIST[query])
+                docs_list.append(tmp_set)
+       # else:
+           # queries.remove(query)
+    
+    
     if docs_list:
         docs = set.intersection(*docs_list)
     else:
-        return
-
+        return flask.jsonify({"hits": []}), 200
+        
     #searches inverted index and builds q and d vectors and dict of doc norms
     q_vector = []
     d_vector = []
     doc_norms = {}
 
     for query in queries:
-        idf = INVERTED_INDEX[query][0]
-        items = INVERTED_INDEX[query][1]
-        for item in items:
-            if item[0] in docs:
-                
-                q_vector.append(freq_map[query] * float(idf))
-                d_vector.append(item[1] * float(idf))
-                doc_norms[item[0]] = item[2]
+        if query not in STOP_WORDS:
+            idf = INVERTED_INDEX[query][0]
+            items = INVERTED_INDEX[query][1]
+            for item in items:
+                if item[0] in docs:
+                    
+                    q_vector.append(freq_map[query] * float(idf))
+                    d_vector.append(item[1] * float(idf))
+                    doc_norms[item[0]] = item[2]
 
+   
     #get score for each doc
     results = []
 
@@ -140,6 +156,5 @@ def get_hits():
     for result in results:
         hits.append({"docid": result[0], "score": result[1]})
 
-    print(hits)
-    return \
-        flask.jsonify({"hits": hits}), 200
+  
+    return flask.jsonify({"hits": hits}), 200
