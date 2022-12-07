@@ -6,7 +6,7 @@ import pathlib
 APPLICATION_ROOT = '/'
 
 # Database file is var/search.sqlite3
-SEARCH_ROOT = pathlib.Path(__file__).resolve().parent.parent
+SEARCH_ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 DATABASE_FILENAME = SEARCH_ROOT/'var'/'search.sqlite3'
 
 # set search index urls

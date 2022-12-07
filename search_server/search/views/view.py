@@ -7,14 +7,16 @@ import threading
 import time
 import json
 import flask
+from flask import request
 import search
 
 search_res = []
 
 def request_api(url, query):
     response = requests.get(url, params=query)
-    res_data = json.loads(response.json())
-    search_res.append(res_data['hits'])
+    res_data = response.json()
+    for res_datum in res_data["hits"]:
+        search_res.append((res_datum["docid"], res_datum["score"]))
 
 @search.app.route("/", methods=["GET"])
 def show_index():
@@ -27,8 +29,10 @@ def show_index():
     
     #initialize variables for API calls
     params = {'q': query, 'w': weight}
-    urls = search.app.config[SEARCH_INDEX_SEGMENT_API_URLS]
+    urls = search.app.config['SEARCH_INDEX_SEGMENT_API_URLS']
     threads = []
+    hitlist = []
+    docs = []
 
     #start threads
     for url in urls:
@@ -41,20 +45,23 @@ def show_index():
         t.join()
 
     #merge lists
-    hits_list = heapq.merge(*search_res, key=lambda x: x[1], reverse=True)
+    #hits_list = list(heapq.merge(*search_res, key=lambda x: x[1], reverse=True))
 
-    hits_size = len(hits_list)
-    if hits_size < 10:
-        search_range = hits_size
+    hitlist = sorted(search_res,key=lambda x: x[1], reverse=True)
 
-    res_docs = []
+    search_range = 10
+    if len(hitlist) < 10:
+        search_range = len(hitlist)  
+
+    ids = []
     for i in range(0,search_range):
-        res_docs.append(hits[i][0])
-
+        ids.append(hitlist[i][0])
 
     connection = search.model.get_db()
     cur = connection.execute(
-        "SELECT title, summary, url "
-        "FROM Documents "
-        "WHERE username1 = ? ", (flask.session["username"],))
+        "SELECT title, summary, url FROM Documents WHERE docid = ?", id)
+    results = cur.fetchall()
 
+    context = {"results": results}
+    return flask.render_template("index.html", **context)
+   

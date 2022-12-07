@@ -11,14 +11,10 @@ STOP_WORDS = []
 PAGE_RANK = {}
 INVERTED_INDEX = {}
 DOC_LIST = {}
-
 def load_index():
     global STOP_WORDS
-
-    file_dir = os.path.dirname(os.path.dirname(__file__))
-    file_path = os.path.join(file_dir, 'stopwords.txt')
-
-    file1 = open(file_path, 'r')
+    
+    file1 = open("../stopwords.txt", 'r')
     #for line in file1:
     stopwords = file1.read()
     STOP_WORDS = stopwords.replace('\n', ' ').split()
@@ -26,8 +22,7 @@ def load_index():
         #STOP_WORDS.append(line)
     file1.close()
 
-    file_path = os.path.join(file_dir, 'pagerank.out')
-    file2 = open(file_path, 'r')
+    file2 = open('../pagerank.out', 'r')
     for line in file2:
         slices = line.split(",")
         PAGE_RANK[slices[0]] = float(slices[1])
@@ -36,8 +31,7 @@ def load_index():
     
     index_path = "inverted_index/"
     index_path += index.app.config["INDEX_PATH"]
-    file_path = os.path.join(file_dir, index_path)
-    file3 = open(file_path, 'r')
+    file3 = open(index_path, 'r')
     for line in file3:
         data_list = []
         docs_list = []
@@ -53,13 +47,7 @@ def load_index():
         INVERTED_INDEX[items[0]] = (float(items[1]), data_list)
         DOC_LIST[items[0]] = docs_list
     file3.close()
-
-def clean(words):
-    for word in words:
-        word = re.sub(r"[^a-zA-Z0-9 ]+", "", word)
-        word = word.casefold()
-    new_words = [x for x in words if x not in STOP_WORDS]
-    return new_words
+    file_dir = os.listdir(file_dir)
 
 def get_TFIDF(q, d, norm_d):
    dot_product = 0
@@ -92,8 +80,7 @@ def get_hits():
     weight = args.get('w', default=0.5, type=int)
     queries = args.get('q').split(' ')
     #print(dirty_queries)
-    #queries = clean(dirty_queries)
-    #print(queries)
+    queries = [re.sub('[^a-zA-Z0-9]+', '', _) for _ in queries]
 
     #gets set of docs containing all queries and dict of term frequency
     freq_map = {}
@@ -117,11 +104,15 @@ def get_hits():
        # else:
            # queries.remove(query)
     
-    
+    print("docslist: ")
+    hits = []
+    #hits.append({"docid": 0, "score": 0})
+    print(docs_list)
     if docs_list:
         docs = set.intersection(*docs_list)
     else:
-        return flask.jsonify({"hits": []}), 200
+        
+        return flask.jsonify({"hits": file_dir}), 200
         
     #searches inverted index and builds q and d vectors and dict of doc norms
     q_vector = []
@@ -152,7 +143,7 @@ def get_hits():
     results = sorted(results, key=lambda x: x[1], reverse=True)
 
     #return results in json format
-    hits = []
+    
     for result in results:
         hits.append({"docid": result[0], "score": result[1]})
 

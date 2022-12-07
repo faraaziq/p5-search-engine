@@ -9,22 +9,28 @@
     </head>
 
     <body>
-        <div class="search_bar">
-            <form action="/" method="GET">
-                <div><input type="text" name="q" value="search"/></div>
-                <div><input type="range" name="w" min="0" max="1" /></div>
-                <input type="submit" value="Search"/>
-              </form>
+        <div class="feed">
+            <div class="search_bar">
+                <div class="ask485">ask485</div>
+                <form action="/" method="GET">
+                    <div><input type="text" name="q" value="search"/></div>
+                    <div class="pagerank_weight">Pagerank Weight</div>
+                    <div><input type="range" name="w" min="0" max="1" step="0.01"/></div>
+                    <input type="submit" value="Search"/>
+                </form>
+            </div>
+            {% if results is defined and results|length == 0 %}
+                <div class="no_results">No search results found!</div>
+            {% else %}
+                {% for result in results %}
+                    <div class="docs">
+                        <a class="doc_url">{{ result.url }}</a>
+                        <div class="doc_title">{{ result.title }}</div>
+                        <div class="doc_summary">{{ result.summary }}</div>
+                    </div>       
+                {% endfor %}
+            {% endif %}
         </div>
-        {% if results is defined and results|length == 0 %}
-            <div class="no_results">No search results found!</div>
-        {% else %}
-            {% for result in results %}
-                <a class="doc_url">{{ url }}</a>
-                <div class="doc_title">{{ doc_title }}</div>
-                <div class="doc_summary">{{ doc_summary }}</div>       
-            {% endfor %}
-        {% endif %}
     </body>
 
 </html>
