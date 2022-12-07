@@ -9,7 +9,9 @@ def main():
     stopwords = stopwords_file.read()
     stopwords = stopwords.replace('\n', ' ').split()
     for line in sys.stdin:
+        title = (line.partition(",")[2].partition(",")[0].strip('"'))
         words = (line.partition(",")[2].partition(",")[2].strip('"'))
+        words = title + " " + words
         words = re.sub(r"[^a-zA-Z0-9 ]+", "", words)
         words = words.split()
         doc_num = line.partition(",")[0].strip('"')

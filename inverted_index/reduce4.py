@@ -13,17 +13,21 @@ def reduce_one_group(key, group, total_docs):
     locations = []
     # keyword = ""
     group_len = 0
-    line_list = []
-    for l in group:
+    for line in group:
         #print(line)
+        words = line.split()
+        keyword = words[0]
+        locations.append((words[1], words[2]))
         group_len += 1
-        line_list.append(l)
-        #print(line)
     #print(f"{key} {word_count}")
-    #print(keyword, end = " ")
+    print(keyword, end = " ")
     ids = inverse_doc_score(total_docs, group_len)
-    for line in line_list:
-        print(line.rstrip() + " " + str(ids)) 
+    print(ids)
+    for location in locations:
+        norm_factor = normalization_factor(int(location[1]), ids)
+        print((location[0] + " " + location[1] + " " + str(norm_factor)), end = " ")
+    print("\n")
+
 
 def keyfunc(line):
     """Return the key from a TAB-delimited key-value pair."""

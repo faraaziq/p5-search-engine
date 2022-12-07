@@ -9,21 +9,18 @@ import itertools
 import math
 
 def reduce_one_group(key, group, total_docs):
-    word_count = 0
-    locations = []
-    # keyword = ""
-    group_len = 0
+    temp_normfactor = 0
     line_list = []
+    # keyword = ""
     for l in group:
         #print(line)
-        group_len += 1
+        words = l.split()
         line_list.append(l)
-        #print(line)
+        temp_normfactor += ((float(words[2]) * float(words[3]))**2)
     #print(f"{key} {word_count}")
-    #print(keyword, end = " ")
-    ids = inverse_doc_score(total_docs, group_len)
     for line in line_list:
-        print(line.rstrip() + " " + str(ids)) 
+        print(line.rstrip() + " " + str(temp_normfactor))
+
 
 def keyfunc(line):
     """Return the key from a TAB-delimited key-value pair."""
