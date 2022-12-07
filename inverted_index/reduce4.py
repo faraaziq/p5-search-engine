@@ -9,7 +9,6 @@ import itertools
 import math
 
 def reduce_one_group(key, group, total_docs):
-    word_count = 0
     locations = []
     # keyword = ""
     group_len = 0
@@ -17,16 +16,14 @@ def reduce_one_group(key, group, total_docs):
         #print(line)
         words = line.split()
         keyword = words[0]
-        locations.append((words[1], words[2]))
+        doc_score = words[1]
+        locations.append(words[2] + " " + words[3] + " " + words[4])
         group_len += 1
     #print(f"{key} {word_count}")
-    print(keyword, end = " ")
-    ids = inverse_doc_score(total_docs, group_len)
-    print(ids)
-    for location in locations:
-        norm_factor = normalization_factor(int(location[1]), ids)
-        print((location[0] + " " + location[1] + " " + str(norm_factor)), end = " ")
-    print("\n")
+    print(keyword + " " + doc_score, end = " ")
+    print(*locations)
+  
+    #print("\n")
 
 
 def keyfunc(line):
@@ -34,13 +31,6 @@ def keyfunc(line):
     #print("partition: " + line.partition("\t")[0])
     keyword = line.partition(" ")[0]
     return keyword
-
-def inverse_doc_score(total_docs, docs_with_term):
-    return math.log10(total_docs / docs_with_term)
-
-def normalization_factor(term_freq_in_doc, inverse_doc_score):
-    n = (term_freq_in_doc * inverse_doc_score) ** 2
-    return n
 
 def main():
     """Divide sorted lines into groups that share a key."""
